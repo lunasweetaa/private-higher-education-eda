@@ -32,15 +32,17 @@ if 'df' in locals():
     st.write("Missing data per column:")
     st.write(missing_data)
 
+    # Convert columns to numeric (if applicable)
+    df['Student'] = pd.to_numeric(df['Student'], errors='coerce')
+    df['Lecture'] = pd.to_numeric(df['Lecture'], errors='coerce')
+
     # Choose how to handle missing data
     fill_missing = st.radio("Choose an option for missing data", ("Fill with Median", "Fill with Mode", "Remove Rows"))
 
     if fill_missing == "Fill with Median":
         # Fill missing data with median for numerical columns
-        if 'Student' in df.columns:
-            df['Student'] = df['Student'].fillna(df['Student'].median())
-        if 'Lecture' in df.columns:
-            df['Lecture'] = df['Lecture'].fillna(df['Lecture'].median())
+        df['Student'] = df['Student'].fillna(df['Student'].median())
+        df['Lecture'] = df['Lecture'].fillna(df['Lecture'].median())
         st.write("Missing data in 'Student' and 'Lecture' columns have been filled with median values.")
 
     elif fill_missing == "Fill with Mode":
