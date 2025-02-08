@@ -9,6 +9,9 @@ st.set_page_config(page_title="Exploring Accreditation Patterns and Student Dist
 # Title of the app
 st.title("Exploring Accreditation Patterns and Student Distribution in Indonesian Private Universities")
 # 1. Upload the Dataset
+import pandas as pd
+import streamlit as st
+
 st.header("Step 1: Upload Dataset")
 uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
@@ -22,33 +25,41 @@ if uploaded_file is not None:
 # 2. Handling Missing Data
 st.header("Step 2: Handling Missing Data")
 
-# Show missing data counts for each column
-missing_data = df.isnull().sum()
-st.write("Missing data per column:")
-st.write(missing_data)
+# Ensure the dataset is loaded before processing
+if 'df' in locals():
+    # Show missing data counts for each column
+    missing_data = df.isnull().sum()
+    st.write("Missing data per column:")
+    st.write(missing_data)
 
-# Choose how to handle missing data
-fill_missing = st.radio("Choose an option for missing data", ("Fill with Median", "Fill with Mode", "Remove Rows"))
+    # Choose how to handle missing data
+    fill_missing = st.radio("Choose an option for missing data", ("Fill with Median", "Fill with Mode", "Remove Rows"))
 
-if fill_missing == "Fill with Median":
-    # Fill missing data with median for numerical columns
-    df['Student'] = df['Student'].fillna(df['Student'].median())
-    df['Lecture'] = df['Lecture'].fillna(df['Lecture'].median())
-    st.write("Missing data in 'Student' and 'Lecture' columns have been filled with median values.")
+    if fill_missing == "Fill with Median":
+        # Fill missing data with median for numerical columns
+        if 'Student' in df.columns:
+            df['Student'] = df['Student'].fillna(df['Student'].median())
+        if 'Lecture' in df.columns:
+            df['Lecture'] = df['Lecture'].fillna(df['Lecture'].median())
+        st.write("Missing data in 'Student' and 'Lecture' columns have been filled with median values.")
 
-elif fill_missing == "Fill with Mode":
-    # Fill missing data with mode for categorical columns
-    df['Accreditation'] = df['Accreditation'].fillna(df['Accreditation'].mode()[0])
-    st.write("Missing data in 'Accreditation' column has been filled with mode.")
+    elif fill_missing == "Fill with Mode":
+        # Fill missing data with mode for categorical columns
+        if 'Accreditation' in df.columns:
+            df['Accreditation'] = df['Accreditation'].fillna(df['Accreditation'].mode()[0])
+        st.write("Missing data in 'Accreditation' column has been filled with mode.")
 
+    else:
+        # Remove rows with missing data
+        rows_removed = df.dropna()
+        st.write(f"{missing_data.sum()} rows with missing data have been removed.")
+        df = rows_removed
+
+    # Show the preview after handling missing data
+    st.subheader("Preview After Handling Missing Data")
+    st.write(df.head())
 else:
-    # Remove rows with missing data
-    df = df.dropna()
-    st.write(f"{missing_data.sum()} rows with missing data have been removed.")
-
-# Show the preview after handling missing data
-st.subheader("Preview After Handling Missing Data")
-st.write(df.head())
+    st.write("Please upload a dataset first.")
 # 3. Removing Duplicates
 st.header("Step 3: Remove Duplicates")
 if st.button("Remove Duplicates"):
